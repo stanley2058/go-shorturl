@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.6/dist/sweetalert2.all.min.js"></script>
+    <style>
+      main {
+        place-items: center;
+        padding-top: 5vh;
+      }
+    </style>
+    <title>Shorten URL</title>
+  </head>
+  <body>
+    <main class="d-flex w-100 justify-content-center flex-column gap-2 pb-5">
+      <div class="card" style="width: 20em">
+        <form id="create" class="card-body">
+          <h5 class="card-title">Shorten an URL</h5>
+          <div class="mb-3">
+            <label for="create-url" class="form-label">URL</label>
+            <input
+              id="create-url"
+              name="url"
+              type="url"
+              class="form-control"
+              placeholder="https://example.com"
+              aria-label="url"
+              aria-describedby="create-url"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="create-shorten" class="form-label"
+              >Shorten Name (Optional)</label
+            >
+            <input
+              id="create-shorten"
+              name="shorten"
+              type="text"
+              class="form-control"
+              placeholder="MyPage"
+              aria-label="shorten"
+              aria-describedby="create-shorten"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Short it!</button>
+        </form>
+      </div>
+      <div class="card" style="width: 20em">
+        <form id="update" class="card-body">
+          <h5 class="card-title">Update a shortened URL</h5>
+          <div class="mb-3">
+            <label for="update-old-shorten" class="form-label"
+              >Shortened Name</label
+            >
+            <input
+              id="update-old-shorten"
+              name="oldShorten"
+              type="text"
+              class="form-control"
+              placeholder="OldName"
+              aria-label="old name"
+              aria-describedby="update-old-shorten"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="update-new-shorten" class="form-label"
+              >New Shortened Name</label
+            >
+            <input
+              id="update-new-shorten"
+              name="newShorten"
+              type="text"
+              class="form-control"
+              placeholder="NewName"
+              aria-label="new name"
+              aria-describedby="update-new-shorten"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Update!</button>
+        </form>
+      </div>
+    </main>
+    <script>
+      document.querySelector("#create").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const { url, shorten } = Object.fromEntries(new FormData(e.target));
+        fetch("/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url, shorten }),
+        }).then((res) => {
+          handleResponse(res.status === 201, shorten);
+        });
+      });
+      document.querySelector("#update").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const { oldShorten, newShorten } = Object.fromEntries(
+          new FormData(e.target)
+        );
+        fetch(`/${oldShorten}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ shorten: newShorten }),
+        }).then((res) => {
+          handleResponse(res.ok, newShorten);
+        });
+      });
+
+      function handleResponse(ok, shorten) {
+        if (ok) {
+          Swal.fire({
+            title: "Success!",
+            text: `Shortened URL: ${window.origin}/${shorten}`,
+            icon: "success",
+            confirmButtonText: "Copy to clipboard!",
+            allowOutsideClick: false,
+          }).then(() => {
+            copyToClickBoard(`${window.origin}/${shorten}`);
+          });
+        } else {
+          Swal.fire({
+            title: "Error!",
+            text: "Something went wrong",
+            icon: "error",
+            confirmButtonText: "Okay",
+            allowOutsideClick: false,
+          });
+        }
+      }
+
+      function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+        // Avoid scrolling to bottom
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          var successful = document.execCommand("copy");
+          var msg = successful ? "successful" : "unsuccessful";
+          console.log("Fallback: Copying text command was " + msg);
+        } catch (err) {
+          console.error("Fallback: Oops, unable to copy", err);
+        }
+        document.body.removeChild(textArea);
+      }
+      async function copyToClickBoard(text) {
+        if (!text) return;
+        text = encodeURI(text);
+        if (!navigator.clipboard) fallbackCopyTextToClipboard(text);
+        else await navigator.clipboard.writeText(text);
+      }
+    </script>
+  </body>
+</html>

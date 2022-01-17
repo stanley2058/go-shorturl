@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  shorturl:
+    # image: docker.stw.tw/go-shorturl
+    image: go-shorturl
+    restart: always
+    ports:
+      - "46000:3000"
+    environment:
+      - REDIS_URL=redis:6379
+    networks: ["go-shorturl"]
+    depends_on:
+      - redis
+  redis:
+    image: redis
+    restart: always
+    networks: ["go-shorturl"]
+    volumes:
+      - "/mnt/data/shorturl-redis:/data"
+
+networks:
+  go-shorturl:
