@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -18,6 +20,7 @@ import (
 var preservedWords = map[string]bool{"all": true}
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	app := fiber.New()
 	app.Use(cors.New())
 
