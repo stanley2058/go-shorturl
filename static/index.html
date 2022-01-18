@@ -149,8 +149,10 @@
             body: JSON.stringify({ url, shorten }),
           });
           const ok = res.status === 201;
-          const { shorten: returnedShorten } = await res.json();
-          await handleResponse(ok, returnedShorten);
+          if (ok) {
+            const { shorten: returnedShorten } = await res.json();
+            await handleResponse(ok, returnedShorten);
+          } else await handleResponse(ok, null);
         });
       document
         .querySelector("#update")
@@ -167,8 +169,10 @@
             body: JSON.stringify({ shorten: newShorten }),
           });
           const ok = res.ok;
-          const { shorten } = await res.json();
-          await handleResponse(ok, shorten);
+          if (ok) {
+            const { shorten } = await res.json();
+            await handleResponse(ok, shorten);
+          } else await handleResponse(ok, null);
         });
 
       document
