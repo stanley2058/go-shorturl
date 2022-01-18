@@ -59,6 +59,10 @@ func GetAllEntries() (map[string]string, error) {
 	return result, nil
 }
 
+func Delete(key string) error {
+	return GetConnection().Del(ctx, key).Err()
+}
+
 // Generate a random key consisting of {length} characters [0-9a-zA-Z], and make sure it's not already in use
 //
 // https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go

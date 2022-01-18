@@ -25,7 +25,8 @@ func main() {
 	app.Get("/all", getAllEntries)
 	app.Post("/", createShortUrl)
 	app.Get("/:shorten", redirect)
-	app.Post("/:shorten", updateShotternUrl)
+	app.Post("/:shorten", updateShortenUrl)
+	app.Delete("/:shorten", deleteShortenUrl)
 
 	app.Listen(fmt.Sprintf(":%s", os.Getenv("PORT")))
 }
@@ -87,7 +88,11 @@ func createShortUrl(c *fiber.Ctx) error {
 	})
 	db.Save(key, string(val))
 
-	return handleStatusCode(c, fiber.StatusCreated)
+	return c.Status(fiber.StatusCreated).JSON(struct {
+		Shorten string `json:"shorten"`
+	}{
+		Shorten: key,
+	})
 }
 
 func getAllEntries(c *fiber.Ctx) error {
@@ -98,7 +103,7 @@ func getAllEntries(c *fiber.Ctx) error {
 	return c.JSON(res)
 }
 
-func updateShotternUrl(c *fiber.Ctx) error {
+func updateShortenUrl(c *fiber.Ctx) error {
 	shortenKey := c.Params("shorten")
 	var body structure.UpdateRecordContext
 	if err := c.BodyParser(&body); err != nil {
@@ -107,7 +112,7 @@ func updateShotternUrl(c *fiber.Ctx) error {
 	// new shorten key cannot be empty
 	newShorten, _ := url.QueryUnescape(body.NewShorten)
 	if newShorten == "" {
-		return handleStatusCode(c, fiber.StatusBadRequest)
+		newShorten = db.GenerateRandomKey()
 	}
 	// new shorten key cannot be preserved word
 	if _, ok := preservedWords[newShorten]; ok {
@@ -119,8 +124,7 @@ func updateShotternUrl(c *fiber.Ctx) error {
 		return handleStatusCode(c, fiber.StatusNotFound, err)
 	}
 	var bodyOld structure.UrlObject
-	err = json.Unmarshal([]byte(res), &bodyOld)
-	if err != nil {
+	if err = json.Unmarshal([]byte(res), &bodyOld); err != nil {
 		return handleServerError(c, err)
 	}
 
@@ -139,6 +143,18 @@ func updateShotternUrl(c *fiber.Ctx) error {
 	})
 	err = db.Save(newShorten, string(val))
 	if err != nil {
+		return handleServerError(c, err)
+	}
+	return c.Status(fiber.StatusOK).JSON(struct {
+		Shorten string `json:"shorten"`
+	}{
+		Shorten: newShorten,
+	})
+}
+
+func deleteShortenUrl(c *fiber.Ctx) error {
+	shortenKey := c.Params("shorten")
+	if err := db.Delete(shortenKey); err != nil {
 		return handleServerError(c, err)
 	}
 	return handleStatusCode(c, fiber.StatusOK)

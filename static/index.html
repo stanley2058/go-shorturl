@@ -94,49 +94,54 @@
       </div>
     </main>
     <script>
-      document.querySelector("#create").addEventListener("submit", (e) => {
-        e.preventDefault();
+      document
+        .querySelector("#create")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
 
-        const { url, shorten } = Object.fromEntries(new FormData(e.target));
-        fetch("/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url, shorten }),
-        }).then((res) => {
-          handleResponse(res.status === 201, shorten);
+          const { url, shorten } = Object.fromEntries(new FormData(e.target));
+          const res = await fetch("/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url, shorten }),
+          });
+          const ok = res.status === 201;
+          const { shorten: returnedShorten } = await res.json();
+          await handleResponse(ok, returnedShorten);
         });
-      });
-      document.querySelector("#update").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const { oldShorten, newShorten } = Object.fromEntries(
-          new FormData(e.target)
-        );
-        fetch(`/${oldShorten}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ shorten: newShorten }),
-        }).then((res) => {
-          handleResponse(res.ok, newShorten);
+      document
+        .querySelector("#update")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const { oldShorten, newShorten } = Object.fromEntries(
+            new FormData(e.target)
+          );
+          const res = await fetch(`/${oldShorten}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ shorten: newShorten }),
+          });
+          const ok = res.ok;
+          const { shorten } = await res.json();
+          await handleResponse(ok, shorten);
         });
-      });
 
-      function handleResponse(ok, shorten) {
+      async function handleResponse(ok, shorten) {
         if (ok) {
-          Swal.fire({
+          await Swal.fire({
             title: "Success!",
             text: `Shortened URL: ${window.origin}/${shorten}`,
             icon: "success",
             confirmButtonText: "Copy to clipboard!",
             allowOutsideClick: false,
-          }).then(() => {
-            copyToClickBoard(`${window.origin}/${shorten}`);
           });
+          await copyToClickBoard(`${window.origin}/${shorten}`);
         } else {
-          Swal.fire({
+          await Swal.fire({
             title: "Error!",
             text: "Something went wrong",
             icon: "error",
