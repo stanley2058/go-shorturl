@@ -19,77 +19,118 @@
     <style>
       main {
         place-items: center;
-        padding-top: 5vh;
+        height: 100vh;
+      }
+      .card {
+        height: 17em;
+        width: 20em;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      @media screen and (max-width: 1000px) {
+        main {
+          flex-direction: column;
+          padding-top: 2em;
+          padding-bottom: 2em;
+          height: auto;
+        }
+        .card {
+          height: auto;
+        }
       }
     </style>
     <title>Shorten URL</title>
   </head>
   <body>
-    <main class="d-flex w-100 justify-content-center flex-column gap-2 pb-5">
-      <div class="card" style="width: 20em">
+    <main class="d-flex w-100 justify-content-center flex-wrap gap-2">
+      <div class="card">
         <form id="create" class="card-body">
-          <h5 class="card-title">Shorten an URL</h5>
-          <div class="mb-3">
-            <label for="create-url" class="form-label">URL</label>
-            <input
-              id="create-url"
-              name="url"
-              type="url"
-              class="form-control"
-              placeholder="https://example.com"
-              aria-label="url"
-              aria-describedby="create-url"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="create-shorten" class="form-label"
-              >Shorten Name (Optional)</label
-            >
-            <input
-              id="create-shorten"
-              name="shorten"
-              type="text"
-              class="form-control"
-              placeholder="MyPage"
-              aria-label="shorten"
-              aria-describedby="create-shorten"
-            />
+          <div>
+            <h5 class="card-title">Shorten an URL</h5>
+            <div class="mb-3">
+              <label for="create-url" class="form-label">URL</label>
+              <input
+                id="create-url"
+                name="url"
+                type="url"
+                class="form-control"
+                placeholder="https://example.com"
+                aria-label="url"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="create-shorten" class="form-label"
+                >Shorten Name (Optional)</label
+              >
+              <input
+                id="create-shorten"
+                name="shorten"
+                type="text"
+                class="form-control"
+                placeholder="MyPage"
+                aria-label="shorten"
+              />
+            </div>
           </div>
           <button type="submit" class="btn btn-primary">Short it!</button>
         </form>
       </div>
-      <div class="card" style="width: 20em">
+      <div class="card">
         <form id="update" class="card-body">
-          <h5 class="card-title">Update a shortened URL</h5>
-          <div class="mb-3">
-            <label for="update-old-shorten" class="form-label"
-              >Shortened Name</label
-            >
-            <input
-              id="update-old-shorten"
-              name="oldShorten"
-              type="text"
-              class="form-control"
-              placeholder="OldName"
-              aria-label="old name"
-              aria-describedby="update-old-shorten"
-            />
+          <div>
+            <h5 class="card-title">Update a shortened URL</h5>
+            <div class="mb-3">
+              <label for="update-old-shorten" class="form-label"
+                >Shortened Name</label
+              >
+              <input
+                id="update-old-shorten"
+                name="oldShorten"
+                type="text"
+                class="form-control"
+                placeholder="OldName"
+                aria-label="old name"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="update-new-shorten" class="form-label"
+                >New Shortened Name</label
+              >
+              <input
+                id="update-new-shorten"
+                name="newShorten"
+                type="text"
+                class="form-control"
+                placeholder="NewName"
+                aria-label="new name"
+              />
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="update-new-shorten" class="form-label"
-              >New Shortened Name</label
-            >
-            <input
-              id="update-new-shorten"
-              name="newShorten"
-              type="text"
-              class="form-control"
-              placeholder="NewName"
-              aria-label="new name"
-              aria-describedby="update-new-shorten"
-            />
+          <button type="submit" class="btn btn-secondary">Update!</button>
+        </form>
+      </div>
+      <div class="card">
+        <form id="delete" class="card-body">
+          <div>
+            <h5 class="card-title">Delete a shortened URL</h5>
+            <div class="mb-3">
+              <label for="delete-shorten" class="form-label"
+                >Shortened Name</label
+              >
+              <input
+                id="delete-shorten"
+                name="shorten"
+                type="text"
+                class="form-control"
+                placeholder="Shorten Name"
+                aria-label="shorten name"
+              />
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary">Update!</button>
+          <button type="submit" class="btn btn-danger">Delete!</button>
         </form>
       </div>
     </main>
@@ -130,6 +171,24 @@
           await handleResponse(ok, shorten);
         });
 
+      document
+        .querySelector("#delete")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const { shorten } = Object.fromEntries(new FormData(e.target));
+          const res = await fetch(`/${shorten}`, {
+            method: "DELETE",
+          });
+          if (res.ok) {
+            await Swal.fire({
+              title: "Success!",
+              text: "Url deleted!",
+              icon: "success",
+              confirmButtonText: "OK",
+            });
+          } else await handleResponse(false, null);
+        });
+
       async function handleResponse(ok, shorten) {
         if (ok) {
           await Swal.fire({
@@ -146,7 +205,6 @@
             text: "Something went wrong",
             icon: "error",
             confirmButtonText: "Okay",
-            allowOutsideClick: false,
           });
         }
       }
