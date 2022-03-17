@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	_ "github.com/joho/godotenv/autoload"
 
@@ -24,10 +25,24 @@ func main() {
 	app := fiber.New()
 	app.Use(cors.New())
 
-	app.Static("/", "./static")
-	app.Get("/all", getAllEntries)
-	app.Post("/", createShortUrl)
 	app.Get("/:shorten", redirect)
+	app.Get("/all", getAllEntries)
+
+	var useBasicAuth = os.Getenv("ENABLE_BASIC_AUTH") == "true"
+	var authFunc (func(*fiber.Ctx) error) = nil
+	if useBasicAuth {
+		authConfig := basicauth.Config{
+			Users: map[string]string{
+				os.Getenv("AUTH_USER"): os.Getenv("AUTH_PASS"),
+			},
+		}
+		authFunc = basicauth.New(authConfig)
+
+		app.Use(authFunc)
+	}
+
+	app.Static("/", "./static")
+	app.Post("/", createShortUrl)
 	app.Post("/:shorten", updateShortenUrl)
 	app.Delete("/:shorten", deleteShortenUrl)
 
