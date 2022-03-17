@@ -9,5 +9,4 @@ FROM scratch
 WORKDIR /run
 COPY --from=builder /build/go-shorturl .
 COPY static static
-COPY .env .
 CMD ["./go-shorturl"]

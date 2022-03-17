@@ -7,7 +7,14 @@ services:
     ports:
       - "46000:3000"
     environment:
+      - ENABLE_BASIC_AUTH
+      - AUTH_USER
+      - AUTH_PASS
       - REDIS_URL=redis:6379
+      - PORT
+      - REDIS_USERNAME
+      - REDIS_PASSWORD
+      - REDIS_DB
     networks: ["go-shorturl"]
     depends_on:
       - redis
