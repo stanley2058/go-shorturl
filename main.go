@@ -25,8 +25,8 @@ func main() {
 	app := fiber.New()
 	app.Use(cors.New())
 
-	app.Get("/:shorten", redirect)
 	app.Get("/all", getAllEntries)
+	app.Get("/:shorten", redirect)
 
 	var useBasicAuth = os.Getenv("ENABLE_BASIC_AUTH") == "true"
 	var authFunc (func(*fiber.Ctx) error) = nil
