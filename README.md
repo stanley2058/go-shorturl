@@ -5,7 +5,7 @@
 ## Build
 
 ```bash
-docker build . go-shorturl
+docker build . -t go-shorturl
 ```
 
 ## Run
