@@ -10,7 +10,12 @@ docker build . go-shorturl
 
 ## Run
 
-Remember to change `docker-compose.yaml` to fit your needs.
+Copy `.env.example` to `.env` and change the values to your own.
+
+To enable basic auth on APIs, set `ENABLE_BASIC_AUTH=true` in `.env`.
+Do not forget to set a username and password.
+
+Finally.
 
 ```bash
 docker-compose up -d
