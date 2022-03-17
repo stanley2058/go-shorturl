@@ -2,8 +2,7 @@ version: "3"
 
 services:
   shorturl:
-    # image: docker.stw.tw/go-shorturl
-    image: go-shorturl
+    image: ${IMAGE}
     restart: always
     ports:
       - "46000:3000"
